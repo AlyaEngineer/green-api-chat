@@ -24,3 +24,12 @@ export type ReceiveNotificationResponse = {
 export type DeleteNotificationResponse = {
   result: boolean;
 };
+
+export type Message = {
+  id: string;
+  chatId: string;
+  text: string;
+  timestamp: number;
+  direction: 'incoming' | 'outgoing';
+  senderName?: string;
+};
