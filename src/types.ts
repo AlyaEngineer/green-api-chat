@@ -33,3 +33,9 @@ export type Message = {
   direction: 'incoming' | 'outgoing';
   senderName?: string;
 };
+
+export type Chat = {
+  chatId: string;
+  name?: string;
+  messages: Message[];
+};
