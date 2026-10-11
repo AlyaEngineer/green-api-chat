@@ -38,4 +38,5 @@ export type Chat = {
   chatId: string;
   name?: string;
   messages: Message[];
+  unreadCount: number;
 };
