@@ -20,6 +20,8 @@ const NOTHING_FOUND_TEXT = 'Ничего не найдено';
 const INSTANCE_LABEL = 'Инстанс';
 const LOGOUT_LABEL = 'Выйти';
 
+const NON_DIGIT_PATTERN = /\D/g;
+
 type ChatsPanelProps = {
   chats: Chat[];
   activeChatId: string | null;
@@ -43,12 +45,16 @@ export function ChatsPanel({
   const [isNewChatFormOpen, setIsNewChatFormOpen] = useState(false);
 
   const searchTextLowercase = searchText.trim().toLowerCase();
+  const searchDigits = searchText.replace(NON_DIGIT_PATTERN, '');
+  const hasSearchDigits = searchDigits !== '';
 
   const foundChats = chats.filter((chat) => {
     const title = getChatTitle(chat).toLowerCase();
     const phoneDigits = chat.chatId.replace(PRIVATE_CHAT_SUFFIX, '');
+    const isTitleMatch = title.includes(searchTextLowercase);
+    const isPhoneMatch = hasSearchDigits && phoneDigits.includes(searchDigits);
 
-    return title.includes(searchTextLowercase) || phoneDigits.includes(searchTextLowercase);
+    return isTitleMatch || isPhoneMatch;
   });
 
   function handleCreateChat(chatId: string) {
