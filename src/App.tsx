@@ -24,6 +24,8 @@ function App() {
   }
 
   const activeChat = chats.find((chat) => chat.chatId === activeChatId);
+  const chatsPanelDisplayClass = activeChat ? 'hidden md:flex' : 'flex';
+  const chatSectionDisplayClass = activeChat ? 'flex' : 'hidden md:flex';
 
   function handleSelect(chatId: string) {
     setActiveChatId(chatId);
@@ -45,6 +47,10 @@ function App() {
     setActiveChatId(null);
   }
 
+  function handleBack() {
+    setActiveChatId(null);
+  }
+
   return (
     <main className="flex h-dvh overflow-hidden">
       <ChatsPanel
@@ -54,15 +60,17 @@ function App() {
         onCreate={handleCreateChat}
         onLogout={handleLogout}
         idInstance={credentials.idInstance}
+        className={chatsPanelDisplayClass}
       />
 
-      <section className="flex min-w-0 flex-1 flex-col">
+      <section className={`min-w-0 flex-1 flex-col ${chatSectionDisplayClass}`}>
         {activeChat && (
           <ChatWindow
             key={activeChat.chatId}
             credentials={credentials}
             chat={activeChat}
             onSend={handleSend}
+            onBack={handleBack}
           />
         )}
 

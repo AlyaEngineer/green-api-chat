@@ -12,9 +12,10 @@ type ChatWindowProps = {
   credentials: Credentials;
   chat: Chat;
   onSend: (message: Message) => void;
+  onBack: () => void;
 };
 
-export function ChatWindow({ credentials, chat, onSend }: ChatWindowProps) {
+export function ChatWindow({ credentials, chat, onSend, onBack }: ChatWindowProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const hasMessages = chat.messages.length > 0;
 
@@ -28,7 +29,7 @@ export function ChatWindow({ credentials, chat, onSend }: ChatWindowProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <ChatHeader chat={chat} />
+      <ChatHeader chat={chat} onBack={onBack} />
 
       <div
         ref={messagesContainerRef}

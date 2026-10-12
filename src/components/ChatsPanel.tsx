@@ -24,6 +24,7 @@ type ChatsPanelProps = {
   chats: Chat[];
   activeChatId: string | null;
   idInstance: string;
+  className: string;
   onSelect: (chatId: string) => void;
   onCreate: (chatId: string) => void;
   onLogout: () => void;
@@ -33,6 +34,7 @@ export function ChatsPanel({
   chats,
   activeChatId,
   idInstance,
+  className,
   onSelect,
   onCreate,
   onLogout,
@@ -64,7 +66,9 @@ export function ChatsPanel({
   }
 
   return (
-    <aside className="flex h-full w-full max-w-90 flex-col border-r border-card-stroke bg-panel backdrop-blur-xl">
+    <aside
+      className={`h-full w-full flex-col border-card-stroke bg-panel backdrop-blur-xl md:max-w-90 md:border-r ${className}`}
+    >
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <h1 className="text-xl leading-6 font-semibold">{PANEL_TITLE}</h1>
 
