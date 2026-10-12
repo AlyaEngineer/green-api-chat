@@ -7,13 +7,25 @@
   --color-primary: #060708;
   --color-secondary: #060708ad;
   --color-tertiary: #06070885;
-  --color-scrollbar: #00000029;
+  --color-contrast: #ffffff;
+  --color-negative: #ff303c;
+
   --color-themed: #007aff;
   --color-themed-hover: #0a6ee0;
   --color-themed-disabled: #007aff7a;
-  --color-negative: #ff303c;
+  --color-accent: #a6dbd2;
+
+  --color-background-from: #a6dbd2;
+  --color-background-via: #8ec8ea;
+  --color-background-to: #7db3f6;
+  --color-background-dots: #ffffff40;
+
+  --color-panel: #ffffffb3;
   --color-field: #0909091a;
-  --color-mint: #a6dbd2;
+  --color-message-input: #ffffff;
+  --color-bubble-incoming: #ffffffe6;
+  --color-notice: #fdf4d3;
+  --color-scrollbar: #00000029;
 
   --color-item-hover: #0000000d;
   --color-item-active: #007aff1a;
@@ -28,10 +40,13 @@
   --color-card-to: #ffffffe0;
   --color-card-stroke: #0000001a;
 
-  --radius-card: 28px;
   --radius-field: 12px;
+  --radius-bubble: 18px;
+  --radius-card: 28px;
 
+  --shadow-header: 0 2px 12px #00000029;
   --shadow-card: 0 4px 24px #00000014;
+  --shadow-message-input: 0 2px 12px #0000001f;
 }
 
 @layer base {
@@ -49,7 +64,12 @@
     min-height: 100vh;
     color: var(--color-primary);
     background:
-      radial-gradient(circle, #ffffff40 1px, transparent 1px) 0 0 / 24px 24px,
-      linear-gradient(45deg, var(--color-mint) 0%, #8ec8ea 50%, #7db3f6 100%);
+      radial-gradient(circle, var(--color-background-dots) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(
+        45deg,
+        var(--color-background-from) 0%,
+        var(--color-background-via) 50%,
+        var(--color-background-to) 100%
+      );
   }
 }

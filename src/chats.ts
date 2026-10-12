@@ -1,13 +1,16 @@
 import { PRIVATE_CHAT_SUFFIX } from '@/constants';
 import type { Chat, Message } from '@/types';
 
+export function getPhoneNumber(chatId: string): string {
+  return `+${chatId.replace(PRIVATE_CHAT_SUFFIX, '')}`;
+}
+
 export function getChatTitle(chat: Chat): string {
   if (chat.name) {
     return chat.name;
   }
 
-  const phone = chat.chatId.replace(PRIVATE_CHAT_SUFFIX, '');
-  return `+${phone}`;
+  return getPhoneNumber(chat.chatId);
 }
 
 export function addMessageToChats(chats: Chat[], message: Message, isActive: boolean): Chat[] {
@@ -16,11 +19,7 @@ export function addMessageToChats(chats: Chat[], message: Message, isActive: boo
   const isUnread = message.direction === 'incoming' && !isActive;
 
   if (!chat) {
-    let unreadCount = 0;
-
-    if (isUnread) {
-      unreadCount = 1;
-    }
+    const unreadCount = isUnread ? 1 : 0;
 
     const newChat: Chat = {
       chatId: message.chatId,
@@ -38,14 +37,10 @@ export function addMessageToChats(chats: Chat[], message: Message, isActive: boo
     return chats;
   }
 
-  let unreadCount = chat.unreadCount;
-
-  if (isUnread) {
-    unreadCount = unreadCount + 1;
-  }
+  const unreadCount = isUnread ? chat.unreadCount + 1 : chat.unreadCount;
 
   const updatedChat: Chat = {
-    chatId: chat.chatId,
+    ...chat,
     name: message.senderName || chat.name,
     messages: [...chat.messages, message],
     unreadCount,
@@ -62,14 +57,14 @@ export function markChatAsRead(chats: Chat[], chatId: string): Chat[] {
       return item;
     }
 
-    return { chatId: item.chatId, name: item.name, messages: item.messages, unreadCount: 0 };
+    return { ...item, unreadCount: 0 };
   });
 }
 
 export function createChat(chats: Chat[], chatId: string): Chat[] {
-  const exists = chats.some((item) => item.chatId === chatId);
+  const isChatExisting = chats.some((item) => item.chatId === chatId);
 
-  if (exists) {
+  if (isChatExisting) {
     return chats;
   }
 
@@ -80,4 +75,8 @@ export function createChat(chats: Chat[], chatId: string): Chat[] {
   };
 
   return [newChat, ...chats];
+}
+
+export function isUnavailableMessage(message: Message): boolean {
+  return message.kind === 'unsupported' || message.kind === 'broken';
 }

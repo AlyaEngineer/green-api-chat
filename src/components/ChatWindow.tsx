@@ -1,13 +1,12 @@
-import { useState, type SubmitEvent } from 'react';
+import { useEffect, useRef } from 'react';
 
-import { getErrorMessage } from '@/api/errors';
-import { sendMessage } from '@/api/greenApi';
-import { getChatTitle } from '@/chats';
+import { ChatHeader } from '@/components/ChatHeader';
+import { MessageBubble } from '@/components/MessageBubble';
+import { MessageForm } from '@/components/MessageForm';
 import type { Chat, Credentials, Message } from '@/types';
 
-const MESSAGE_INPUT_LABEL = 'Сообщение';
-const MESSAGE_PLACEHOLDER = 'Напишите сообщение...';
-const SEND_BUTTON_TEXT = 'Отправить';
+const MESSAGES_ARIA_LABEL = 'Сообщения';
+const EMPTY_CHAT_TEXT = 'Сообщений пока нет. Напишите первым';
 
 type ChatWindowProps = {
   credentials: Credentials;
@@ -16,77 +15,43 @@ type ChatWindowProps = {
 };
 
 export function ChatWindow({ credentials, chat, onSend }: ChatWindowProps) {
-  const [messageText, setMessageText] = useState('');
-  const [errorText, setErrorText] = useState<string | null>(null);
-  const [isSending, setIsSending] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const hasMessages = chat.messages.length > 0;
 
-  const chatTitle = getChatTitle(chat);
+  useEffect(() => {
+    const messagesContainer = messagesContainerRef.current;
 
-  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const trimmedMessageText = messageText.trim();
-
-    if (!trimmedMessageText) {
-      return;
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
-
-    setErrorText(null);
-    setIsSending(true);
-
-    try {
-      const { idMessage } = await sendMessage(credentials, chat.chatId, trimmedMessageText);
-
-      onSend({
-        id: idMessage,
-        chatId: chat.chatId,
-        text: trimmedMessageText,
-        timestamp: Date.now(),
-        direction: 'outgoing',
-      });
-
-      setMessageText('');
-    } catch (requestError) {
-      setErrorText(getErrorMessage(requestError));
-    } finally {
-      setIsSending(false);
-    }
-  }
+  }, [chat.messages.length]);
 
   return (
-    <div className="flex h-full flex-col">
-      <h2 className="mb-4 font-semibold">{chatTitle}</h2>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ChatHeader chat={chat} />
 
-      <ul className="flex flex-1 flex-col gap-2">
-        {chat.messages.map((message) => {
-          const alignClass = message.direction === 'outgoing' ? 'text-right' : 'text-left';
+      <div
+        ref={messagesContainerRef}
+        role="log"
+        aria-label={MESSAGES_ARIA_LABEL}
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto px-10 pt-4 pb-16"
+      >
+        {!hasMessages && (
+          <p className="mx-auto mt-auto max-w-md rounded-field bg-notice px-4 py-2 text-center text-sm text-secondary shadow-sm">
+            {EMPTY_CHAT_TEXT}
+          </p>
+        )}
 
-          return (
-            <li key={message.id} className={alignClass}>
-              {message.text}
-            </li>
-          );
-        })}
-      </ul>
+        {hasMessages && (
+          <ul className="mt-auto flex flex-col gap-2">
+            {chat.messages.map((message) => (
+              <MessageBubble key={message.id} message={message} />
+            ))}
+          </ul>
+        )}
+      </div>
 
-      {errorText && (
-        <p role="alert" className="text-negative">
-          {errorText}
-        </p>
-      )}
-
-      <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
-        <input
-          value={messageText}
-          onChange={(event) => setMessageText(event.target.value)}
-          aria-label={MESSAGE_INPUT_LABEL}
-          placeholder={MESSAGE_PLACEHOLDER}
-          className="flex-1 border p-2"
-        />
-        <button type="submit" disabled={isSending} className="border p-2">
-          {SEND_BUTTON_TEXT}
-        </button>
-      </form>
+      <MessageForm credentials={credentials} chatId={chat.chatId} onSend={onSend} />
     </div>
   );
 }

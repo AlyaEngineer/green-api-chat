@@ -82,7 +82,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
         <div className="relative size-14">
           <div
             aria-hidden="true"
-            className="absolute -inset-3 rounded-full bg-conic from-themed via-mint to-themed opacity-60 blur-xl"
+            className="absolute -inset-3 rounded-full bg-conic from-themed via-accent to-themed opacity-60 blur-xl"
           />
           <img src="/favicon.svg" alt="" className="relative size-14" />
         </div>

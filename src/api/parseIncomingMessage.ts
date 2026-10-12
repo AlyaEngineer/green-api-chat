@@ -1,5 +1,10 @@
 import { PRIVATE_CHAT_SUFFIX } from '@/constants';
-import type { Message } from '@/types';
+import type { Message, MessageKind } from '@/types';
+
+type MessageContent = {
+  text: string;
+  kind: MessageKind;
+};
 
 const TEXT_MESSAGE_TYPES = ['textMessage', 'extendedTextMessage', 'quotedMessage'];
 const IGNORED_MESSAGE_TYPES = [
@@ -9,36 +14,44 @@ const IGNORED_MESSAGE_TYPES = [
   'deletedMessage',
 ];
 
-const SWE_ERROR_PREFIX = '{{SWE';
+const DECRYPTION_ERROR_PREFIX = '{{SWE';
 const UNSUPPORTED_MESSAGE_TEXT = 'Сообщение этого типа не поддерживается';
 const BROKEN_MESSAGE_TEXT =
   'Не удалось получить сообщение. Попросите собеседника отправить его ещё раз';
+const MILLISECONDS_IN_SECOND = 1000;
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function getMessageText(messageData: Record<string, unknown>, typeMessage: string): string | null {
+function getMessageContent(
+  messageData: Record<string, unknown>,
+  typeMessage: string,
+): MessageContent | null {
   if (!TEXT_MESSAGE_TYPES.includes(typeMessage)) {
-    return UNSUPPORTED_MESSAGE_TEXT;
+    return { text: UNSUPPORTED_MESSAGE_TEXT, kind: 'unsupported' };
   }
 
-  const data =
+  const textData =
     typeMessage === 'textMessage'
       ? messageData.textMessageData
       : messageData.extendedTextMessageData;
 
-  if (!isObject(data)) {
+  if (!isObject(textData)) {
     return null;
   }
 
-  const text = data.textMessage ?? data.text;
+  const text = textData.textMessage ?? textData.text;
 
   if (typeof text !== 'string') {
     return null;
   }
 
-  return text.startsWith(SWE_ERROR_PREFIX) ? BROKEN_MESSAGE_TEXT : text;
+  if (text.startsWith(DECRYPTION_ERROR_PREFIX)) {
+    return { text: BROKEN_MESSAGE_TEXT, kind: 'broken' };
+  }
+
+  return { text, kind: 'text' };
 }
 
 export function parseIncomingMessage(body: unknown): Message | null {
@@ -67,18 +80,21 @@ export function parseIncomingMessage(body: unknown): Message | null {
     return null;
   }
 
-  const text = getMessageText(messageData, messageData.typeMessage);
+  const messageContent = getMessageContent(messageData, messageData.typeMessage);
 
-  if (text === null) {
+  if (messageContent === null) {
     return null;
   }
+
+  const senderName = typeof senderData.senderName === 'string' ? senderData.senderName : undefined;
 
   return {
     id: idMessage,
     chatId: senderData.chatId,
-    text,
-    timestamp: timestamp * 1000,
+    text: messageContent.text,
+    timestamp: timestamp * MILLISECONDS_IN_SECOND,
     direction: 'incoming',
-    senderName: typeof senderData.senderName === 'string' ? senderData.senderName : undefined,
+    kind: messageContent.kind,
+    senderName,
   };
 }

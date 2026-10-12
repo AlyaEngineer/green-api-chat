@@ -38,7 +38,7 @@ export function Avatar({ chatId, title }: AvatarProps) {
   return (
     <span
       aria-hidden="true"
-      className={`flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-medium text-white ${colorClassName}`}
+      className={`flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-medium text-contrast ${colorClassName}`}
     >
       {firstLetter || <UserIcon className="size-6" />}
     </span>

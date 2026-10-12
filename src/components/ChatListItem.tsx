@@ -1,12 +1,12 @@
-import { getChatTitle } from '@/chats';
+import { getChatTitle, isUnavailableMessage } from '@/chats';
 import { Avatar } from '@/components/Avatar';
-import { formatChatTime } from '@/formatChatTime';
+import { formatChatTime } from '@/formatTime';
 import type { Chat } from '@/types';
 
-const NO_MESSAGES_TEXT = 'Нет сообщений';
+const EMPTY_CHAT_PREVIEW_TEXT = 'Нет сообщений';
 const OUTGOING_MESSAGE_PREFIX = 'Вы:';
-const UNREAD_COUNT_LABEL = 'Непрочитанных сообщений:';
-const MAX_UNREAD_TO_SHOW = 99;
+const UNREAD_COUNT_SCREEN_READER_TEXT = 'Непрочитанных сообщений:';
+const MAX_VISIBLE_UNREAD_COUNT = 99;
 
 type ChatListItemProps = {
   chat: Chat;
@@ -20,7 +20,15 @@ export function ChatListItem({ chat, isActive, onSelect }: ChatListItemProps) {
   const hasUnread = chat.unreadCount > 0;
   const backgroundClass = isActive ? 'bg-item-active' : 'hover:bg-item-hover';
 
-  let lastMessagePreview = NO_MESSAGES_TEXT;
+  const isLastMessageUnavailable = lastMessage !== undefined && isUnavailableMessage(lastMessage);
+  const previewStyleClass = isLastMessageUnavailable ? 'italic' : '';
+
+  const unreadCountBadgeText =
+    chat.unreadCount > MAX_VISIBLE_UNREAD_COUNT
+      ? `${MAX_VISIBLE_UNREAD_COUNT}+`
+      : String(chat.unreadCount);
+
+  let lastMessagePreview = EMPTY_CHAT_PREVIEW_TEXT;
   let lastMessageTime = '';
 
   if (lastMessage) {
@@ -31,9 +39,6 @@ export function ChatListItem({ chat, isActive, onSelect }: ChatListItemProps) {
       lastMessagePreview = `${OUTGOING_MESSAGE_PREFIX} ${lastMessage.text}`;
     }
   }
-
-  const unreadCountText =
-    chat.unreadCount > MAX_UNREAD_TO_SHOW ? `${MAX_UNREAD_TO_SHOW}+` : String(chat.unreadCount);
 
   return (
     <button
@@ -51,12 +56,14 @@ export function ChatListItem({ chat, isActive, onSelect }: ChatListItemProps) {
         </span>
 
         <span className="flex items-start justify-between gap-2">
-          <span className="line-clamp-2 text-sm text-secondary">{lastMessagePreview}</span>
+          <span className={`line-clamp-2 text-sm text-secondary ${previewStyleClass}`}>
+            {lastMessagePreview}
+          </span>
 
           {hasUnread && (
-            <span className="mt-0.5 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-themed px-1.5 text-xs leading-none font-medium text-white tabular-nums">
-              <span className="sr-only">{UNREAD_COUNT_LABEL} </span>
-              {unreadCountText}
+            <span className="mt-0.5 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-themed px-1.5 text-xs leading-none font-medium text-contrast tabular-nums">
+              <span className="sr-only">{UNREAD_COUNT_SCREEN_READER_TEXT} </span>
+              {unreadCountBadgeText}
             </span>
           )}
         </span>

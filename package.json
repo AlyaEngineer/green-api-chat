@@ -12,6 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "linkify-react": "^4.3.3",
+    "linkifyjs": "^4.3.3",
     "lucide-react": "^1.55.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

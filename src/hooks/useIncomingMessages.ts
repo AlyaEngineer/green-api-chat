@@ -6,8 +6,8 @@ import type { Credentials, Message } from '@/types';
 
 const RETRY_DELAY_MS = 5000;
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function sleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 export function useIncomingMessages(
@@ -31,6 +31,10 @@ export function useIncomingMessages(
       while (isListening) {
         try {
           const notification = await receiveNotification(currentCredentials);
+
+          if (!isListening) {
+            return;
+          }
 
           if (notification) {
             const message = parseIncomingMessage(notification.body);

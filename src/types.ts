@@ -25,12 +25,15 @@ export type DeleteNotificationResponse = {
   result: boolean;
 };
 
+export type MessageKind = 'text' | 'unsupported' | 'broken';
+
 export type Message = {
   id: string;
   chatId: string;
   text: string;
   timestamp: number;
   direction: 'incoming' | 'outgoing';
+  kind: MessageKind;
   senderName?: string;
 };
 

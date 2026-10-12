@@ -64,7 +64,7 @@ export function ChatsPanel({
   }
 
   return (
-    <aside className="flex h-full w-full max-w-90 flex-col border-r border-card-stroke bg-white/70 backdrop-blur-xl">
+    <aside className="flex h-full w-full max-w-90 flex-col border-r border-card-stroke bg-panel backdrop-blur-xl">
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <h1 className="text-xl leading-6 font-semibold">{PANEL_TITLE}</h1>
 

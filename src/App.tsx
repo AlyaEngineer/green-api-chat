@@ -16,7 +16,7 @@ function App() {
 
   useIncomingMessages(credentials, (message) => {
     const isActive = message.chatId === activeChatId;
-    setChats((prev) => addMessageToChats(prev, message, isActive));
+    setChats((previousChats) => addMessageToChats(previousChats, message, isActive));
   });
 
   if (!credentials) {
@@ -27,16 +27,16 @@ function App() {
 
   function handleSelect(chatId: string) {
     setActiveChatId(chatId);
-    setChats((prev) => markChatAsRead(prev, chatId));
+    setChats((previousChats) => markChatAsRead(previousChats, chatId));
   }
 
   function handleCreateChat(chatId: string) {
-    setChats((prev) => createChat(prev, chatId));
-    setActiveChatId(chatId);
+    setChats((previousChats) => createChat(previousChats, chatId));
+    handleSelect(chatId);
   }
 
   function handleSend(message: Message) {
-    setChats((prev) => addMessageToChats(prev, message, true));
+    setChats((previousChats) => addMessageToChats(previousChats, message, true));
   }
 
   function handleLogout() {
@@ -56,7 +56,7 @@ function App() {
         idInstance={credentials.idInstance}
       />
 
-      <section className="flex-1 p-4">
+      <section className="flex min-w-0 flex-1 flex-col">
         {activeChat && (
           <ChatWindow
             key={activeChat.chatId}
@@ -65,7 +65,14 @@ function App() {
             onSend={handleSend}
           />
         )}
-        {!activeChat && <p>{NO_ACTIVE_CHAT_TEXT}</p>}
+
+        {!activeChat && (
+          <div className="flex flex-1 items-center justify-center">
+            <p className="rounded-field bg-notice px-4 py-2 text-sm text-secondary shadow-sm">
+              {NO_ACTIVE_CHAT_TEXT}
+            </p>
+          </div>
+        )}
       </section>
     </main>
   );
