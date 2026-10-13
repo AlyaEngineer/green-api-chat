@@ -3,12 +3,16 @@ import { API_URL, NETWORK_ERROR } from '@/constants';
 import type {
   Credentials,
   DeleteNotificationResponse,
+  GetChatsResponse,
   ReceiveNotificationResponse,
   SendMessageResponse,
   StateInstance,
 } from '@/types';
 
-type ApiMethod = 'getStateInstance' | 'sendMessage' | 'receiveNotification' | 'deleteNotification';
+type ApiMethod =
+  'getStateInstance' | 'sendMessage' | 'receiveNotification' | 'deleteNotification' | 'getChats';
+
+const RECENT_CHATS_COUNT = 20;
 
 function buildUrl(credentials: Credentials, method: ApiMethod): string {
   const { idInstance, apiToken } = credentials;
@@ -37,6 +41,12 @@ export async function getStateInstance(credentials: Credentials): Promise<StateI
     buildUrl(credentials, 'getStateInstance'),
   );
   return data.stateInstance;
+}
+
+export function getChats(credentials: Credentials): Promise<GetChatsResponse> {
+  return greenApiRequest<GetChatsResponse>(
+    `${buildUrl(credentials, 'getChats')}?count=${RECENT_CHATS_COUNT}`,
+  );
 }
 
 export function sendMessage(

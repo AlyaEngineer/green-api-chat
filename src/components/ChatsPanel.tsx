@@ -6,7 +6,7 @@ import { ChatList } from '@/components/ChatList';
 import { NewChatForm } from '@/components/NewChatForm';
 import { Button } from '@/components/ui/Button';
 import { PRIVATE_CHAT_SUFFIX } from '@/constants';
-import type { Chat } from '@/types';
+import type { Chat, ChatsLoadStatus } from '@/types';
 
 const NEW_CHAT_FORM_ID = 'new-chat-form';
 
@@ -15,10 +15,15 @@ const NEW_CHAT_BUTTON_LABEL = 'Новый чат';
 const SEARCH_LABEL = 'Поиск по чатам';
 const SEARCH_PLACEHOLDER = 'Поиск';
 const CHAT_LIST_LABEL = 'Список чатов';
-const NO_CHATS_TEXT = 'Чатов пока нет';
 const NOTHING_FOUND_TEXT = 'Ничего не найдено';
 const INSTANCE_LABEL = 'Инстанс';
 const LOGOUT_LABEL = 'Выйти';
+
+const EMPTY_LIST_TEXTS: Record<ChatsLoadStatus, string> = {
+  loading: 'Загружаем чаты...',
+  error: 'Не удалось загрузить чаты',
+  done: 'Чатов пока нет',
+};
 
 const NON_DIGIT_PATTERN = /\D/g;
 
@@ -27,6 +32,7 @@ type ChatsPanelProps = {
   activeChatId: string | null;
   idInstance: string;
   className: string;
+  chatsLoadStatus: ChatsLoadStatus;
   onSelect: (chatId: string) => void;
   onCreate: (chatId: string) => void;
   onLogout: () => void;
@@ -37,6 +43,7 @@ export function ChatsPanel({
   activeChatId,
   idInstance,
   className,
+  chatsLoadStatus,
   onSelect,
   onCreate,
   onLogout,
@@ -66,7 +73,7 @@ export function ChatsPanel({
   let emptyListText = '';
 
   if (chats.length === 0) {
-    emptyListText = NO_CHATS_TEXT;
+    emptyListText = EMPTY_LIST_TEXTS[chatsLoadStatus];
   } else if (foundChats.length === 0) {
     emptyListText = NOTHING_FOUND_TEXT;
   }

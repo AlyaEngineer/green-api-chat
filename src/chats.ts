@@ -1,5 +1,5 @@
 import { PRIVATE_CHAT_SUFFIX } from '@/constants';
-import type { Chat, Message } from '@/types';
+import type { Chat, GetChatsResponse, Message } from '@/types';
 
 export function getPhoneNumber(chatId: string): string {
   return `+${chatId.replace(PRIVATE_CHAT_SUFFIX, '')}`;
@@ -79,4 +79,22 @@ export function createChat(chats: Chat[], chatId: string): Chat[] {
 
 export function isUnavailableMessage(message: Message): boolean {
   return message.kind === 'unsupported' || message.kind === 'broken';
+}
+
+export function createChatsFromApi(apiChats: GetChatsResponse): Chat[] {
+  return apiChats
+    .filter((apiChat) => apiChat.id.endsWith(PRIVATE_CHAT_SUFFIX) && !apiChat.archive)
+    .map((apiChat) => ({
+      chatId: apiChat.id,
+      name: apiChat.name || undefined,
+      unreadCount: 0,
+      messages: [],
+    }));
+}
+
+export function addLoadedChats(chats: Chat[], loadedChats: Chat[]): Chat[] {
+  const existingChatIds = new Set(chats.map((item) => item.chatId));
+  const chatsToAdd = loadedChats.filter((item) => !existingChatIds.has(item.chatId));
+
+  return [...chats, ...chatsToAdd];
 }

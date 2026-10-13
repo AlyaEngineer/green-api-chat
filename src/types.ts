@@ -43,3 +43,14 @@ export type Chat = {
   messages: Message[];
   unreadCount: number;
 };
+
+export type GreenApiChat = {
+  id: string;
+  name?: string;
+  type: 'user' | 'group';
+  archive: boolean;
+};
+
+export type GetChatsResponse = GreenApiChat[];
+
+export type ChatsLoadStatus = 'loading' | 'error' | 'done';

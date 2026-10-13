@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { addMessageToChats, createChat, markChatAsRead } from '@/chats';
+import { getChats } from '@/api/greenApi';
+import {
+  addLoadedChats,
+  addMessageToChats,
+  createChat,
+  createChatsFromApi,
+  markChatAsRead,
+} from '@/chats';
 import { ChatsPanel } from '@/components/ChatsPanel';
 import { ChatWindow } from '@/components/ChatWindow';
 import { LoginForm } from '@/components/LoginForm';
 import { useIncomingMessages } from '@/hooks/useIncomingMessages';
-import type { Chat, Credentials, Message } from '@/types';
+import type { Chat, ChatsLoadStatus, Credentials, Message } from '@/types';
 
 const NO_ACTIVE_CHAT_TEXT = 'Выберите чат или создайте новый';
 
@@ -13,11 +20,40 @@ function App() {
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [chatsLoadStatus, setChatsLoadStatus] = useState<ChatsLoadStatus>('loading');
 
   useIncomingMessages(credentials, (message) => {
     const isActive = message.chatId === activeChatId;
     setChats((previousChats) => addMessageToChats(previousChats, message, isActive));
   });
+
+  useEffect(() => {
+    if (!credentials) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    getChats(credentials)
+      .then((loadedApiChats) => {
+        if (isCancelled) {
+          return;
+        }
+
+        const loadedChats = createChatsFromApi(loadedApiChats);
+        setChats((previousChats) => addLoadedChats(previousChats, loadedChats));
+        setChatsLoadStatus('done');
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setChatsLoadStatus('error');
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [credentials]);
 
   if (!credentials) {
     return <LoginForm onLogin={setCredentials} />;
@@ -45,6 +81,7 @@ function App() {
     setCredentials(null);
     setChats([]);
     setActiveChatId(null);
+    setChatsLoadStatus('loading');
   }
 
   function handleBack() {
@@ -61,6 +98,7 @@ function App() {
         onLogout={handleLogout}
         idInstance={credentials.idInstance}
         className={chatsPanelDisplayClass}
+        chatsLoadStatus={chatsLoadStatus}
       />
 
       <section className={`min-w-0 flex-1 flex-col ${chatSectionDisplayClass}`}>
