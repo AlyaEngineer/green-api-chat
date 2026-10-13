@@ -116,7 +116,7 @@ export function ChatsPanel({
         </label>
       </div>
 
-      <nav aria-label={CHAT_LIST_LABEL} className="min-h-0 flex-1 overflow-y-auto">
+      <nav aria-label={CHAT_LIST_LABEL} className="relative min-h-0 flex-1 overflow-y-auto">
         {emptyListText && (
           <p className="px-4 py-8 text-center text-sm text-tertiary">{emptyListText}</p>
         )}
