@@ -1,7 +1,125 @@
+import { useEffect, useState } from 'react';
+
+import { getChats } from '@/api/greenApi';
+import {
+  addLoadedChats,
+  addMessageToChats,
+  createChat,
+  createChatsFromApi,
+  markChatAsRead,
+} from '@/chats';
+import { ChatsPanel } from '@/components/ChatsPanel';
+import { ChatWindow } from '@/components/ChatWindow';
+import { LoginForm } from '@/components/LoginForm';
+import { useIncomingMessages } from '@/hooks/useIncomingMessages';
+import type { Chat, ChatsLoadStatus, Credentials, Message } from '@/types';
+
+const NO_ACTIVE_CHAT_TEXT = 'Выберите чат или создайте новый';
+
 function App() {
+  const [credentials, setCredentials] = useState<Credentials | null>(null);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [chatsLoadStatus, setChatsLoadStatus] = useState<ChatsLoadStatus>('loading');
+
+  useIncomingMessages(credentials, (message) => {
+    const isActive = message.chatId === activeChatId;
+    setChats((previousChats) => addMessageToChats(previousChats, message, isActive));
+  });
+
+  useEffect(() => {
+    if (!credentials) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    getChats(credentials)
+      .then((loadedApiChats) => {
+        if (isCancelled) {
+          return;
+        }
+
+        const loadedChats = createChatsFromApi(loadedApiChats);
+        setChats((previousChats) => addLoadedChats(previousChats, loadedChats));
+        setChatsLoadStatus('done');
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setChatsLoadStatus('error');
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [credentials]);
+
+  if (!credentials) {
+    return <LoginForm onLogin={setCredentials} />;
+  }
+
+  const activeChat = chats.find((chat) => chat.chatId === activeChatId);
+  const chatsPanelDisplayClass = activeChat ? 'hidden md:flex' : 'flex';
+  const chatSectionDisplayClass = activeChat ? 'flex' : 'hidden md:flex';
+
+  function handleSelect(chatId: string) {
+    setActiveChatId(chatId);
+    setChats((previousChats) => markChatAsRead(previousChats, chatId));
+  }
+
+  function handleCreateChat(chatId: string) {
+    setChats((previousChats) => createChat(previousChats, chatId));
+    handleSelect(chatId);
+  }
+
+  function handleSend(message: Message) {
+    setChats((previousChats) => addMessageToChats(previousChats, message, true));
+  }
+
+  function handleLogout() {
+    setCredentials(null);
+    setChats([]);
+    setActiveChatId(null);
+    setChatsLoadStatus('loading');
+  }
+
+  function handleBack() {
+    setActiveChatId(null);
+  }
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100">
-      <h1 className="text-2xl font-semibold text-slate-800">GREEN-API Chat</h1>
+    <main className="flex h-dvh overflow-hidden">
+      <ChatsPanel
+        chats={chats}
+        activeChatId={activeChatId}
+        onSelect={handleSelect}
+        onCreate={handleCreateChat}
+        onLogout={handleLogout}
+        idInstance={credentials.idInstance}
+        className={chatsPanelDisplayClass}
+        chatsLoadStatus={chatsLoadStatus}
+      />
+
+      <section className={`min-w-0 flex-1 flex-col ${chatSectionDisplayClass}`}>
+        {activeChat && (
+          <ChatWindow
+            key={activeChat.chatId}
+            credentials={credentials}
+            chat={activeChat}
+            onSend={handleSend}
+            onBack={handleBack}
+          />
+        )}
+
+        {!activeChat && (
+          <div className="flex flex-1 items-center justify-center">
+            <p className="rounded-field bg-notice px-4 py-2 text-sm text-secondary shadow-sm">
+              {NO_ACTIVE_CHAT_TEXT}
+            </p>
+          </div>
+        )}
+      </section>
     </main>
   );
 }
