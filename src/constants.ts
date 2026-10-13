@@ -1,4 +1,6 @@
-export const API_URL = 'https://api.green-api.com';
+const DEFAULT_API_URL = 'https://api.greenapi.com';
+
+export const API_URL = import.meta.env.VITE_INSTANCE_API_URL || DEFAULT_API_URL;
 
 export const NETWORK_ERROR = 0;
 
